@@ -1,0 +1,309 @@
+{% extends 'layout.html' %}
+
+{% block title %}C Compiler Visualization{% endblock %}
+
+{% block content %}
+<div class="container-fluid compiler-container">
+    <div class="row mb-4">
+        <div class="col-md-12">
+            <h1 class="display-5 mb-3">C Compiler Visualization</h1>
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle-fill me-2"></i>
+                This tool visualizes all phases of a C compiler from lexical analysis to code generation.
+            </div>
+        </div>
+    </div>
+    
+    <!-- Alerts container -->
+    <div id="alert-container" class="mb-3"></div>
+    
+    <!-- Phase Navigation -->
+    <div class="phase-nav mb-4">
+        <button class="phase-btn" data-target="code">
+            <i class="bi bi-code-square"></i>
+            <span>Input Code</span>
+            <div class="phase-status"></div>
+        </button>
+        
+        <div class="phase-arrow">→</div>
+        
+        <button class="phase-btn" data-target="lexical">
+            <i class="bi bi-list-ul"></i>
+            <span>Lexical Analysis</span>
+            <div class="phase-status" id="lexical-status">
+                <span class="badge bg-secondary">Not started</span>
+            </div>
+        </button>
+        
+        <div class="phase-arrow">→</div>
+        
+        <button class="phase-btn" data-target="syntax">
+            <i class="bi bi-diagram-3"></i>
+            <span>Syntax Analysis</span>
+            <div class="phase-status" id="syntax-status">
+                <span class="badge bg-secondary">Not started</span>
+            </div>
+        </button>
+        
+        <div class="phase-arrow">→</div>
+        
+        <button class="phase-btn" data-target="semantic">
+            <i class="bi bi-card-checklist"></i>
+            <span>Semantic Analysis</span>
+            <div class="phase-status" id="semantic-status">
+                <span class="badge bg-secondary">Not started</span>
+            </div>
+        </button>
+        
+        <div class="phase-arrow">→</div>
+        
+        <button class="phase-btn" data-target="intermediate">
+            <i class="bi bi-code"></i>
+            <span>Intermediate Code</span>
+            <div class="phase-status" id="intermediate-status">
+                <span class="badge bg-secondary">Not started</span>
+            </div>
+        </button>
+        
+        <div class="phase-arrow">→</div>
+        
+        <button class="phase-btn" data-target="optimization">
+            <i class="bi bi-lightning"></i>
+            <span>Optimization</span>
+            <div class="phase-status" id="optimization-status">
+                <span class="badge bg-secondary">Not started</span>
+            </div>
+        </button>
+        
+        <div class="phase-arrow">→</div>
+        
+        <button class="phase-btn" data-target="codegen">
+            <i class="bi bi-cpu"></i>
+            <span>Code Generation</span>
+            <div class="phase-status" id="codegen-status">
+                <span class="badge bg-secondary">Not started</span>
+            </div>
+        </button>
+    </div>
+    
+    <!-- Compilation Control Buttons -->
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="btn-group">
+                <button id="compile-btn" class="btn btn-success">
+                    <i class="bi bi-play-fill"></i> Compile
+                </button>
+                <button id="clear-btn" class="btn btn-secondary">
+                    <i class="bi bi-eraser"></i> Clear
+                </button>
+                <div class="btn-group">
+                    <button class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                        <i class="bi bi-file-earmark-code"></i> Examples
+                    </button>
+                    <ul id="examples-dropdown" class="dropdown-menu">
+                        <!-- Examples will be added by JavaScript -->
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Content Tabs -->
+    <div class="row">
+        <div class="col-md-12">
+            <ul class="nav nav-tabs" id="compiler-tabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="code-tab" data-bs-toggle="tab" 
+                            data-bs-target="#code" type="button" role="tab">
+                        Code Input
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="lexical-tab" data-bs-toggle="tab" 
+                            data-bs-target="#lexical" type="button" role="tab">
+                        Lexical Analysis
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="syntax-tab" data-bs-toggle="tab" 
+                            data-bs-target="#syntax" type="button" role="tab">
+                        Syntax Analysis
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="semantic-tab" data-bs-toggle="tab" 
+                            data-bs-target="#semantic" type="button" role="tab">
+                        Semantic Analysis
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="intermediate-tab" data-bs-toggle="tab" 
+                            data-bs-target="#intermediate" type="button" role="tab">
+                        Intermediate Code
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="optimization-tab" data-bs-toggle="tab" 
+                            data-bs-target="#optimization" type="button" role="tab">
+                        Optimization
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="codegen-tab" data-bs-toggle="tab" 
+                            data-bs-target="#codegen" type="button" role="tab">
+                        Code Generation
+                    </button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="compiler-tab-content">
+                <!-- Code Input Tab -->
+                <div class="tab-pane fade show active" id="code" role="tabpanel">
+                    <div class="card bg-dark border-secondary mt-3">
+                        <div class="card-header bg-dark text-light">
+                            <h5 class="card-title mb-0">C Code Input</h5>
+                        </div>
+                        <div class="card-body">
+                            <textarea id="code-input" class="form-control"></textarea>
+                            <div class="mt-3">
+                                <button id="compile-btn-inline" class="btn btn-success">
+                                    <i class="bi bi-play-fill"></i> Compile
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Lexical Analysis Tab -->
+                <div class="tab-pane fade" id="lexical" role="tabpanel">
+                    <div class="card bg-dark border-secondary mt-3">
+                        <div class="card-header bg-dark text-light">
+                            <h5 class="card-title mb-0">Lexical Analysis</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="lexical-result" class="result-container">
+                                <div class="text-center text-muted">
+                                    <i class="bi bi-info-circle"></i>
+                                    Compile code to see lexical analysis results
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Syntax Analysis Tab -->
+                <div class="tab-pane fade" id="syntax" role="tabpanel">
+                    <div class="card bg-dark border-secondary mt-3">
+                        <div class="card-header bg-dark text-light">
+                            <h5 class="card-title mb-0">Syntax Analysis</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="syntax-result" class="result-container">
+                                <div class="text-center text-muted">
+                                    <i class="bi bi-info-circle"></i>
+                                    Compile code to see syntax analysis results
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Semantic Analysis Tab -->
+                <div class="tab-pane fade" id="semantic" role="tabpanel">
+                    <div class="card bg-dark border-secondary mt-3">
+                        <div class="card-header bg-dark text-light">
+                            <h5 class="card-title mb-0">Semantic Analysis</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="semantic-result" class="result-container">
+                                <div class="text-center text-muted">
+                                    <i class="bi bi-info-circle"></i>
+                                    Compile code to see semantic analysis results
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Intermediate Code Tab -->
+                <div class="tab-pane fade" id="intermediate" role="tabpanel">
+                    <div class="card bg-dark border-secondary mt-3">
+                        <div class="card-header bg-dark text-light">
+                            <h5 class="card-title mb-0">Intermediate Code Generation</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="intermediate-result" class="result-container">
+                                <div class="text-center text-muted">
+                                    <i class="bi bi-info-circle"></i>
+                                    Compile code to see intermediate code generation results
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Optimization Tab -->
+                <div class="tab-pane fade" id="optimization" role="tabpanel">
+                    <div class="card bg-dark border-secondary mt-3">
+                        <div class="card-header bg-dark text-light">
+                            <h5 class="card-title mb-0">Code Optimization</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="optimization-result" class="result-container">
+                                <div class="text-center text-muted">
+                                    <i class="bi bi-info-circle"></i>
+                                    Compile code to see optimization results
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Code Generation Tab -->
+                <div class="tab-pane fade" id="codegen" role="tabpanel">
+                    <div class="card bg-dark border-secondary mt-3">
+                        <div class="card-header bg-dark text-light">
+                            <h5 class="card-title mb-0">Code Generation</h5>
+                        </div>
+                        <div class="card-body">
+                            <div id="codegen-result" class="result-container">
+                                <div class="text-center text-muted">
+                                    <i class="bi bi-info-circle"></i>
+                                    Compile code to see code generation results
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Loader overlay -->
+<div id="compiler-loader">
+    <div class="spinner-container">
+        <div class="spinner-border text-light" style="width: 3rem; height: 3rem;" role="status">
+            <span class="visually-hidden">Loading...</span>
+        </div>
+        <h5 class="mt-3 text-light">Compiling...</h5>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+<script>
+    // Duplicate compile button functionality for the inline button
+    document.addEventListener('DOMContentLoaded', function() {
+        const inlineCompileBtn = document.getElementById('compile-btn-inline');
+        const mainCompileBtn = document.getElementById('compile-btn');
+        
+        if (inlineCompileBtn && mainCompileBtn) {
+            inlineCompileBtn.addEventListener('click', function() {
+                mainCompileBtn.click();
+            });
+        }
+    });
+</script>
+{% endblock %}
