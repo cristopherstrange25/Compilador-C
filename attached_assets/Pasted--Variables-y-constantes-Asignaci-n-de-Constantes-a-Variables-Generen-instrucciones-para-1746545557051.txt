@@ -1,0 +1,91 @@
+ Variables y constantes
+
+●        Asignación de Constantes a Variables: Generen instrucciones para asignar valores constantes a variables. Cada constante se representa mediante una etiqueta temporal en el código intermedio.
+Ejemplo :
+# Código fuente
+x = 5;
+y = 10;
+ 
+# Código intermedio
+t1 = 5       # t1 es una etiqueta temporal que representa la constante 5
+x = t1       # Asigna el valor de t1 a x
+ 
+t2 = 10      # t2 es una etiqueta temporal que representa la constante 10
+y = t2       # Asigna el valor de t2 a y
+
+●        Uso de Variables: Cuando se utilizan variables, asegúrense de que el código intermedio refleje las operaciones que se realizan sobre ellas. Cada variable debe ser tratada de forma adecuada para operaciones posteriores.
+Ejemplo :
+# Código fuente
+z = x + y;
+ 
+# Código intermedio
+t3 = x + y    # t3 es una etiqueta temporal que representa la suma de x e y
+z = t3        # Asigna el valor de t3 a z
+
+Evaluación de Expresiones Aritméticas y Lógicas
+
+●        Expresiones Aritméticas: Conviertan operaciones aritméticas en una serie de instrucciones que realicen la operación y almacenen el resultado en una etiqueta temporal.
+Ejemplo :
+# Código fuente
+result = a * (b + c);
+ 
+# Código intermedio
+t4 = b + c    # t4 es una etiqueta temporal que representa la suma de b y c
+t5 = a * t4   # t5 es una etiqueta temporal que representa la multiplicación de a por t4
+result = t5   # Asigna el valor de t5 a result
+
+●        Expresiones Lógicas: Transformen expresiones lógicas en instrucciones que reflejen las operaciones booleanas y de comparación. Asegúrese de que las comparaciones se representen con instrucciones intermedias que puedan ser evaluadas.
+Ejemplo :
+# Código fuente
+flag = (x > y) && (z < 10);
+ 
+# Código intermedio
+t6 = x > y    # t6 es una etiqueta temporal para la comparación x > y
+t7 = z < 10   # t7 es una etiqueta temporal para la comparación z < 10
+flag = t6 && t7  # flag toma el valor de la operación lógica AND entre t6 y t7
+
+Generación de Instrucciones Temporales
+
+●        Asignación de Resultados Intermedios: Cuando se realicen operaciones que involucren más de un paso, utilicen etiquetas temporales para almacenar resultados intermedios antes de la asignación final.
+Ejemplo :
+# Código fuente
+total = (a + b) * (c - d);
+ 
+# Código intermedio
+t8 = a + b    # t8 es una etiqueta temporal para la suma de a y b
+t9 = c - d    # t9 es una etiqueta temporal para la resta de c y d
+t10 = t8 * t9 # t10 es una etiqueta temporal para la multiplicación de t8 por t9
+total = t10   # Asigna el valor de t10 a total
+
+●        Manejo de Expresiones Anidadas: Para expresiones que incluyen paréntesis o anidamiento, generen instrucciones temporales para manejar cada nivel de la expresión antes de combinarlas.
+Ejemplo :
+# Código fuente
+result = (x + y) / (z - w);
+ 
+# Código intermedio
+t11 = x + y   # t11 es una etiqueta temporal para la suma de x e y
+t12 = z - w   # t12 es una etiqueta temporal para la resta de z y w
+t13 = t11 / t12  # t13 es una etiqueta temporal para la división de t11 por t12
+result = t13 # Asigna el valor de t13 a result
+
+Gestión de Errores y Validaciones
+
+●        Detección de Errores en Operaciones: Implementen validaciones para detectar y reportar errores en operaciones aritméticas o lógicas, como divisiones por cero.
+Ejemplo :
+# Código fuente
+result = a / b;
+ 
+# Código intermedio
+if b == 0 then error "Division by zero" # Valida que no se realice división por cero
+t14 = a / b    # t14 es una etiqueta temporal para la división de a entre b
+result = t14   # Asigna el valor de t14 a result
+
+●        Validación de Tipos: Asegúrese de que los tipos de datos sean compatibles con las operaciones realizadas, y reporte errores si los tipos no son compatibles.
+Ejemplo :
+# Código fuente
+total = a + "string"; # Operación inválida entre entero y cadena
+ 
+# Código intermedio
+if type(a) != integer or type("string") != integer then error "Type mismatch" # Valida tipos
+t15 = a + "string"  # Este paso debería ser bloqueado por la validación de tipos
+total = t15

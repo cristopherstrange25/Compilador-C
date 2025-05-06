@@ -1,0 +1,549 @@
+Identificación de Errores Léxicos:
+
+●        Caracteres no reconocidos: Implementen una regla léxica que capture cualquier carácter no reconocido y utilice el manejador de errores para reportarlo.
+●        Identificadores mal formados: Verifiquen que los identificadores cumplan con las reglas definidas y reporten cualquier inconsistencia.
+●        Literales numéricos Incorrectos: Asegúrense de que los literales numéricos cumplen con las expresiones regulares definidas y reporten cualquier error.
+●        Cadenas mal formadas: Implementen un mecanismo para detectar y reportar cadenas de texto que no cierran correctamente.
+
+Mensajes de error informativos:
+
+●        Asegúrense de que los mensajes de error proporcionen suficiente información para identificar y corregir el problema, incluyendo el tipo de error, la línea y columna donde ocurrió, y una descripción del problema.
+
+Definición de la Gramática
+
+○        Definan la gramática para la declaración y uso de variables y constantes. Esto implica especificar las reglas sintácticas que describen cómo se declaran y usan las variables y constantes en el lenguaje de programación objetivo.
+
+Ejemplo:
+declaracion_variable -> tipo IDENTIFICADOR ';'
+tipo -> 'entero' | 'flotante' | 'booleano' | 'cadena'
+IDENTIFICADOR -> [letra | '_'][letra | digito | '_']*
+○        En este ejemplo, declaracion_variable define que una declaración de variable consiste en un tipo seguido de un IDENTIFICADOR y un punto y coma (;).
+○        tipo puede ser uno de los tipos básicos: entero, flotante, booleano, o cadena.
+○        IDENTIFICADOR representa el nombre de la variable, que debe comenzar con una letra o guion bajo, seguido de letras, números o guiones bajos.
+
+Implementación del Analizador Sintáctico
+
+●        Usen una herramienta de generación de analizadores sintácticos para implementar el analizador sintáctico basado en la gramática definida.
+
+Ejemplo de Reglas:
+- Una declaración de variable debe comenzar con un tipo válido, seguido de un identificador válido y terminar con un punto y coma.
+- Los tipos válidos incluyen: 'entero', 'flotante', 'booleano', y 'cadena'.
+- Los identificadores deben comenzar con una letra o guion bajo y pueden contener letras, dígitos, o guiones bajos.
+
+Gestión de Errores Sintácticos
+
+●        Implementen un manejador de errores que capture y reporte errores sintácticos durante el análisis, proporcionando información sobre la ubicación y naturaleza del error.
+
+Ejemplo de Gestión de Errores:
+- Si un identificador comienza con un dígito, se debe reportar un error: "Error: Identificador inválido en la línea X, columna Y. Un identificador debe comenzar con una letra o guion bajo."
+- Si falta el punto y coma al final de una declaración, se debe reportar un error: "Error: Se esperaba ';' al final de la declaración en la línea X, columna Y."
+- Si se encuentra un tipo no válido, se debe reportar un error: "Error: Tipo no válido en la línea X, columna Y. Los tipos válidos son 'entero', 'flotante', 'booleano', y 'cadena'.”
+
+Pruebas y Validación
+
+●        Desarrollen casos de prueba que incluyan declaraciones válidas e inválidas de variables y constantes para verificar que el analizador sintáctico y el manejador de errores funcionen correctamente.
+
+Ejemplo de Casos de Prueba:
+Declaraciones válidas:
+entero x;
+flotante y;
+booleano activo;
+cadena nombre;
+Declaraciones inválidas:
+entero 123x;  // Identificador no válido
+flotante y;   // Tipo no válido
+booleano activo // Falta punto y coma
+cadena 123;   // Identificador no válido
+
+Definición de la Gramática
+
+●        Descripción: Definan la gramática para las expresiones aritméticas y lógicas. Esto incluye especificar las reglas sintácticas que describen cómo se construyen y evalúan estas expresiones en el lenguaje de programación objetivo.
+
+Ejemplo:
+expresion -> expresion_aritmetica | expresion_logica
+expresion_aritmetica -> termino (( '+' | '-' ) termino)*
+termino -> factor (( '*' | '/' ) factor)*
+factor -> IDENTIFICADOR | NUMERO | '(' expresion_aritmetica ')'
+expresion_logica -> termino_logico (( '&&' | '||' ) termino_logico)*
+termino_logico -> expresion_aritmetica ( '==' | '!=' | '>' | '<' | '>=' | '<=' ) expresion_aritmetica
+○        En este ejemplo, expresion puede ser una expresion_aritmetica o una expresion_logica.
+○        expresion_aritmetica incluye términos separados por operadores de suma o resta.
+○        termino incluye factores separados por operadores de multiplicación o división.
+○        factor puede ser un identificador, un número, o una expresión aritmética entre paréntesis.
+○        expresion_logica incluye términos lógicos separados por operadores lógicos (&&, ||).
+○        termino_logico compara dos expresiones aritméticas usando operadores relacionales.
+
+Implementación del Analizador Sintáctico
+
+●        Usen una herramienta de generación de analizadores sintácticos para implementar el analizador sintáctico basado en la gramática definida.
+
+Ejemplo de Reglas:
+- Una expresión aritmética debe estar compuesta de términos y factores separados por operadores aritméticos.
+- Una expresión lógica debe estar compuesta de términos lógicos separados por operadores lógicos.
+- Los términos lógicos deben comparar dos expresiones aritméticas utilizando operadores relacionales.
+
+Gestión de Errores Sintácticos
+
+●        Implementen un manejador de errores que capture y reporte errores sintácticos durante el análisis, proporcionando información sobre la ubicación y naturaleza del error.
+
+Ejemplo de Gestión de Errores:
+- Si una expresión aritmética tiene un operador sin un término válido, se debe reportar un error: "Error: Operador sin término en la línea X, columna Y."
+- Si una expresión lógica tiene una comparación sin una expresión aritmética válida, se debe reportar un error: "Error: Comparación inválida en la línea X, columna Y."
+- Si una expresión tiene paréntesis desbalanceados, se debe reportar un error: "Error: Paréntesis desbalanceados en la línea X, columna Y.”
+
+Pruebas y Validación
+
+●        Desarrollen casos de prueba que incluyan expresiones aritméticas y lógicas válidas e inválidas para verificar que el analizador sintáctico y el manejador de errores funcionen correctamente.
+
+Ejemplo de Casos de Prueba:
+Expresiones válidas:
+x + y * 5
+(a - b) / c
+10 > 5 && 3 <= 4
+(x + y) * (z - w)
+ 
+Expresiones inválidas:
+x + * y  // Operador sin término
+10 >  // Comparación sin expresión aritmética
+(a - b  // Paréntesis desbalanceados
+5 / (2 + )  // Paréntesis desbalanceados
+ 
+
+Definición de la Gramática
+
+●        Definan la gramática para las estructuras de control como condicionales (if, else) y bucles (while, for). La gramática debe especificar cómo se construyen y evalúan estas estructuras en el lenguaje de programación objetivo.
+●        Ejemplo:
+
+estructura_control -> sentencia_if | sentencia_while | sentencia_for
+sentencia_if -> 'if' '(' expresion ')' '{' bloque '}' ( 'else' '{' bloque '}' )?
+sentencia_while -> 'while' '(' expresion ')' '{' bloque '}'
+sentencia_for -> 'for' '(' inicializacion ';' expresion ';' actualizacion ')' '{' bloque '}'
+bloque -> ( sentencia )*
+sentencia -> expresion | estructura_control | declaracion | asignacion
+inicializacion -> declaracion | asignacion
+actualizacion -> expresion
+○        En este ejemplo estructura_control puede ser una sentencia_if, sentencia_while, o sentencia_for.
+○        sentencia_if incluye una condición (expresion) y un bloque de sentencias entre llaves ({}), opcionalmente seguido por un bloque else.
+○        sentencia_while incluye una condición (expresion) y un bloque de sentencias entre llaves.
+○        sentencia_for incluye una inicialización (inicializacion), una condición (expresion), una actualización (actualizacion), y un bloque de sentencias entre llaves.
+
+Implementación del Analizador Sintáctico
+
+●        Usen una herramienta de generación de analizadores sintácticos para implementar el analizador sintáctico basado en la gramática definida.
+●        Ejemplo de Reglas:
+
+- Una estructura `if` debe tener una condición válida y un bloque de sentencias entre llaves.
+- Una estructura `while` debe tener una condición válida y un bloque de sentencias entre llaves.
+- Una estructura `for` debe tener una inicialización válida, una condición válida, una actualización válida, y un bloque de sentencias entre llaves.
+
+ Gestión de Errores Sintácticos
+
+●        Descripción: Implementen un manejador de errores que capture y reporte errores sintácticos durante el análisis, proporcionando información sobre la ubicación y naturaleza del error.
+●        Ejemplo de Gestión de Errores:
+
+- Si una estructura `if` no tiene una condición válida, se debe reportar un error: "Error: Condición inválida en la estructura 'if' en la línea X, columna Y."
+- Si una estructura `while` no tiene un bloque de sentencias entre llaves, se debe reportar un error: "Error: Bloque de sentencias faltante en la estructura 'while' en la línea X, columna Y."
+- Si una estructura `for` tiene una inicialización, condición, o actualización inválida, se debe reportar un error: "Error: Componente inválido en la estructura 'for' en la línea X, columna Y."
+
+Pruebas y Validación
+
+●        Desarrollen casos de prueba que incluyan estructuras de control válidas e inválidas para verificar que el analizador sintáctico y el manejador de errores funcionen correctamente.
+●        Ejemplo de Casos de Prueba:
+
+Estructuras válidas:
+
+if (x > 0) { x = x + 1; } else { x = x - 1; }
+while (y < 10) { y = y + 1; }
+for (i = 0; i < 10; i = i + 1) { suma = suma + i; }
+ 
+Estructuras inválidas:
+
+if (x > 0 { x = x + 1; }  // Paréntesis desbalanceados
+while x < 10) { y = y + 1; }  // Paréntesis faltantes
+for i = 0; i < 10; i = i + 1) { suma = suma + i; }  // Paréntesis faltantes
+
+Definición de la Gramática
+
+●        Definan la gramática para la definición de métodos y clases en el lenguaje de programación objetivo. La gramática debe especificar cómo se construyen y estructuran estos elementos.
+●        Ejemplo:
+
+clase -> 'class' identificador '{' cuerpo_clase '}'
+cuerpo_clase -> ( declaracion_metodo | declaracion_variable )*
+declaracion_metodo -> tipo identificador '(' parametros ')' '{' cuerpo_metodo '}'
+parametros -> ( parametro ( ',' parametro )* )?
+parametro -> tipo identificador
+cuerpo_metodo -> ( sentencia )*
+tipo -> 'int' | 'float' | 'void' | 'char' | 'boolean' | identificador
+identificador -> [a-zA-Z_][a-zA-Z0-9_]*
+○        clase puede contener métodos (declaracion_metodo) y variables (declaracion_variable).
+○        declaracion_metodo define un método con un tipo de retorno, nombre, lista de parámetros, y un cuerpo de método.
+○        parametros pueden ser una lista de uno o más parámetros separados por comas.
+○        cuerpo_metodo es una secuencia de sentencias que componen el cuerpo del método.
+
+Implementación del Analizador Sintáctico
+
+●        Descripción: Usen una herramienta de generación de analizadores sintácticos para implementar el analizador sintáctico basado en la gramática definida.
+●        Ejemplo de Reglas:
+
+- Una declaración de clase debe comenzar con la palabra clave 'class', seguida de un identificador y un cuerpo de clase entre llaves.
+- Una declaración de método debe incluir un tipo de retorno, un identificador, una lista de parámetros entre paréntesis, y un cuerpo de método entre llaves.
+- El cuerpo de método debe contener una secuencia válida de sentencias.
+
+ Gestión de Errores Sintácticos
+
+●        Descripción: Implementen un manejador de errores que capture y reporte errores sintácticos durante el análisis, proporcionando información sobre la ubicación y naturaleza del error.
+●        Ejemplo de Gestión de Errores:
+
+- Si una declaración de clase no tiene un cuerpo válido, se debe reportar un error: "Error: Cuerpo de clase inválido en la declaración de 'class' en la línea X, columna Y."
+- Si una declaración de método no tiene un tipo de retorno válido, se debe reportar un error: "Error: Tipo de retorno inválido en la declaración de método en la línea X, columna Y."
+- Si una declaración de método tiene parámetros inválidos, se debe reportar un error: "Error: Parámetro inválido en la declaración de método en la línea X, columna Y."
+
+ Pruebas y Validación
+
+●        Descripción: Desarrollen casos de prueba que incluyan definiciones de clases y métodos válidos e inválidos para verificar que el analizador sintáctico y el manejador de errores funcionen correctamente.
+●        Ejemplo de Casos de Prueba:
+
+Definiciones válidas:
+
+class MiClase {
+    int miMetodo(int a, float b) {
+        // cuerpo del método
+    }
+    void otroMetodo() {
+        // cuerpo del método
+    }
+}
+ 
+Definiciones inválidas:
+
+class MiClase {
+    int miMetodo(int a float b) {  // Falta coma entre parámetros
+        // cuerpo del método
+    }
+    void otroMetodo {  // Faltan paréntesis
+        // cuerpo del método
+    }
+}
+
+ Tabla de símbolos
+
+Definición y Estructura de la Tabla de Símbolos
+
+●        Describan la estructura de datos que represente la tabla de símbolos. Esta tabla debe almacenar información sobre identificadores, tipos de datos, alcance y otras propiedades necesarias para el análisis semántico.
+Ejemplo:
+○        tabla_simbolos -> {
+○          identificador -> {
+○            tipo: tipo_de_dato,
+○            alcance: global | local,
+○            valor: valor_asignado
+○          }
+○        }
+
+Inserción y Búsqueda en la Tabla de Símbolos
+
+●        Implementen funciones para insertar nuevos símbolos en la tabla y buscar símbolos existentes durante el análisis semántico.
+Ejemplo:
+○        inserten_simbolo(identificador, tipo_de_dato, alcance)
+○        busquen_simbolo(identificador)
+Verificación de Tipos de Datos
+
+●        Desarrollen la lógica para verificar los tipos de datos durante las declaraciones y asignaciones de variables. Asegúrense de que los tipos sean compatibles y manejen errores cuando no lo sean.
+Ejemplo:
+○        int x;
+○        float y = 3.5;
+○        x = y;  // Error: Asignación de float a int
+
+Gestión de Ámbito (Scope)
+
+●        Implementen la gestión de ámbito para garantizar que los identificadores se declaren y utilicen correctamente dentro de sus respectivos ámbitos (global o local).
+Ejemplo:
+○        int variable_global;
+○         
+○        void miFuncion() {
+○          int variable_local;
+○          variable_global = 5;   // Acceso a variable global desde función
+○          variable_local = 10;   // Uso de variable local dentro de la función
+○        }
+
+Gestión de Errores Semánticos
+
+●        Implementen la detección y manejo de errores semánticos relacionados con la tabla de símbolos y la verificación de tipos. Asegúrense de proporcionar mensajes de error claros y precisos que indiquen la naturaleza del problema encontrado.
+Ejemplo de Errores:
+○        - "Error: Identificador 'x' no declarado en la línea X, columna Y."
+○        - "Error: Tipo de dato incompatible en la asignación a 'x' en la línea X, columna Y."
+
+Pruebas y Validación
+
+●        Desarrollen casos de prueba exhaustivos para verificar la correcta inserción, búsqueda y verificación de tipos en la tabla de símbolos.
+Ejemplo de Casos de Prueba:
+○        int a;
+○        a = 5;        // Válido
+○        float b;
+○        b = a;        // Error: Asignación de int a float
+●        c = 10;       // Error: Identificador no declarado
+
+Validación de Tipos
+
+●        Chequeen los Tipos de Datos: Verifiquen que cada variable y expresión esté utilizando el tipo de dato correcto. Por ejemplo, si tienen una expresión matemática que involucra variables a y b, asegúrense de que ambas sean numéricas (enteras o flotantes) y no cadenas de texto.
+Ejemplo:
+int edad = 25;      // Correcto: 'edad' es un entero.
+string nombre = "Juan";  // Correcto: 'nombre' es una cadena.
+// Incorrecto: Intentar realizar una operación matemática con una cadena.
+// int resultado = edad + nombre; // Error: 'nombre' no es un tipo numérico.
+
+●        Compatibilidad de Tipos: Asegúrense de que los operandos en las expresiones aritméticas y lógicas sean compatibles con los operadores que están utilizando. Por ejemplo, no deben permitir sumar una cadena de texto con un número.
+Ejemplo:
+int suma = 5 + 3;         // Correcto: ambos operandos son enteros.
+string texto = "Hola";
+// Incorrecto: Intentar sumar un número con una cadena.
+// int error = 5 + texto; // Error: no se puede sumar un número con una cadena.
+
+●        Conversiones de Tipo: Verifiquen que cualquier conversión de tipo (implícita o explícita) sea válida y no cause pérdida de información o errores. Por ejemplo, al convertir un entero a flotante, asegúrense de que la conversión se maneje adecuadamente.
+Ejemplo:
+int entero = 10;
+float flotante = static_cast<float>(entero); // Correcto: conversión explícita de entero a flotante.
+// Incorrecto: Conversión implícita que podría perder precisión.
+// float resultado = 5 / 2; // El resultado es 2.5, pero 5 / 2 en enteros es 2.
+
+Expresiones Aritméticas y Lógicas
+
+●        La validación de expresiones aritméticas y lógicas asegura que las operaciones y comparaciones sean realizadas correctamente según las reglas del lenguaje.
+●        Verifiquen que las expresiones aritméticas (como suma, resta, multiplicación y división) utilicen operadores adecuados y que los operandos sean de tipo numérico. Asegúrense de que las operaciones no resulten en errores, como la división por cero.
+Ejemplo:
+int resultado = 10 / 2;  // Correcto: división de enteros que da como resultado 5.
+// Incorrecto: división por cero.
+// int error = 10 / 0; // Error: división por cero.
+●        Asegúrense de que los operadores lógicos (como AND, OR, NOT) se apliquen a operandos booleanos. Verifiquen que las expresiones lógicas estén formadas correctamente y que no se mezclen con tipos no booleanos.
+Ejemplo:
+bool resultado = true && false; // Correcto: ambos operandos son booleanos.
+// Incorrecto: intento de aplicar un operador lógico a un número.
+// bool error = true && 1; // Error: el operando '1' no es un valor booleano.
+●        Verifiquen que las comparaciones (como ==, !=, <, >) se realicen entre tipos compatibles. Asegúrense de que no se comparen tipos incompatibles, como cadenas con números.
+Ejemplo:
+bool esIgual = (5 == 5); // Correcto: comparación entre dos enteros.
+// Incorrecto: comparación entre una cadena y un número.
+// bool error = ("5" == 5); // Error: no se puede comparar una cadena con un número.
+Gestión de Errores
+
+●        Detección de Errores: Implementen mecanismos para detectar errores relacionados con tipos y expresiones. Por ejemplo, asegúrense de identificar operaciones inválidas, tipos incorrectos y problemas de conversión.
+Ejemplo:
+// Detectar errores como la división por cero:
+if (denominador == 0) {
+    // Informar que la división por cero no está permitida.
+    // Error: División por cero.
+}
+
+●        Informes de Errores: Generen mensajes de error claros y específicos que indiquen el tipo de error, la ubicación en el código, y una descripción útil del problema. Por ejemplo, un mensaje de error podría ser: "Error: No se puede sumar una cadena con un número en la línea 12."
+Ejemplo:
+// Mensaje de error para suma inválida:
+// "Error: No se puede sumar una cadena con un número en la línea 15."
+
+●        Manejo de Excepciones: En algunos lenguajes, podrían necesitar manejar excepciones que surjan durante la evaluación de expresiones para asegurar una gestión adecuada de errores.
+Ejemplo:
+try {
+    // Código que podría lanzar una excepción.
+} catch (const std::exception& e) {
+    // Manejar la excepción y mostrar un mensaje de error.
+    // "Error: Excepción lanzada debido a un tipo de dato incorrecto."
+}
+
+Pruebas y Validaciones
+
+●        Casos de Prueba: Creen casos de prueba que cubran una variedad de escenarios, incluyendo operaciones válidas e inválidas, diferentes tipos de datos y expresiones. Asegúrense de probar con datos válidos e inválidos para verificar que el sistema detecte los errores correctamente.
+
+Ejemplo:
+// Casos de prueba válidos e inválidos:
+int a = 10, b = 5;
+int resultado = a + b;   // Válido.
+// int error = a + "texto"; // Inválido: 'texto' no es un número.
+ 
+bool resultadoLogico = (a > b) && (b < 10); // Válido.
+// bool errorLogico = (a > b) && "texto"; // Inválido: 'texto' no es un valor booleano.
+
+●        Validación de Resultados: Comparen los resultados obtenidos con los resultados esperados para asegurar que la validación esté funcionando correctamente. Verifiquen que los errores sean reportados con precisión y que las expresiones válidas sean aceptadas.
+Ejemplo:
+// Validar resultados:
+int sumaEsperada = 8;
+int sumaReal = 5 + 3;
+// Comprobar si sumaReal es igual a sumaEsperada.
+// Mensaje esperado:
+// "La suma de 5 y 3 debería ser 8."
+
+●        Cobertura de Pruebas: Asegúrense de que las pruebas cubran todas las áreas relevantes del código, incluyendo expresiones complejas y casos límite.
+Ejemplo:
+// Pruebas para expresiones complejas:
+int resultadoComplejo = (10 + 20) * (30 - 15); // Expresión compleja.
+// Comparar el resultado con el valor esperado.
+
+Validación de Estructuras de Control
+
+●        Sintaxis de las Estructuras de Control: Asegúrense de que las estructuras de control estén correctamente formateadas y que todas las llaves o bloques de código estén adecuadamente cerrados. También verifiquen que las condiciones sean válidas.
+Ejemplo:
+# Ejemplo de estructura `if` correcta
+if (a > b) {
+    // Código a ejecutar si la condición es verdadera
+    console.log("a es mayor que b");
+} else {
+    // Código a ejecutar si la condición es falsa
+    console.log("a no es mayor que b");
+}
+
+●        Comprobación de Condiciones Lógicas: Verifiquen que las condiciones dentro de las estructuras de control sean válidas y que el tipo de dato sea compatible con la operación lógica. Por ejemplo, las condiciones if deben ser expresiones booleanas.
+Ejemplo:
+# Ejemplo de estructura `if` con condición booleana válida
+if (x > 10) {
+    // Código a ejecutar si x es mayor que 10
+    console.log("x es mayor que 10");
+}
+
+# Ejemplo de estructura `if` con condición inválida
+if ("texto") {
+    // Esto debe ser rechazado porque "texto" no es una expresión booleana
+    console.log("Esto es incorrecto");
+}
+
+●        Validación de Flujo de Control: Asegúrense de que el flujo del control sea lógico y no contenga errores como bucles infinitos o sentencias return fuera de lugar. Verifiquen que todos los caminos posibles en la lógica de control sean accesibles y manejados adecuadamente.
+Ejemplo:
+# Ejemplo de bucle `while` con condición de salida
+while (contador < 10) {
+    console.log(contador);
+    contador++;
+}
+
+# Ejemplo de `return` dentro de una función
+function calcularSuma(a, b) {
+    return a + b;
+}
+
+# Ejemplo de bucle infinito
+while (true) {
+    // Esto causará un bucle infinito si no hay una condición de salida
+    console.log("Esto no termina nunca");
+}
+
+Validación de Métodos
+
+●        Definición de Métodos: Asegúrense de que los métodos estén definidos correctamente con el tipo de retorno, el nombre y los parámetros apropiados. La definición debe coincidir con la llamada del método.
+Ejemplo
+# Ejemplo de definición y llamada de un método
+function sumar(a, b) {
+    return a + b;
+}
+ 
+// Llamada correcta al método
+let resultado = sumar(5, 3);
+console.log(resultado); // Debería imprimir 8
+
+●        Chequeo de Parámetros: Verifiquen que los parámetros pasados a los métodos sean del tipo correcto y que el número de argumentos coincida con los parámetros esperados en la definición del método.
+Ejemplo:
+# Ejemplo de método con parámetros correctos
+function multiplicar(a, b) {
+    return a * b;
+}
+ 
+// Llamada correcta con parámetros enteros
+let producto = multiplicar(4, 6);
+console.log(producto); // Debería imprimir 24
+# Ejemplo de llamada a un método con parámetros incorrectos
+function dividir(a, b) {
+    return a / b;
+}
+
+// Llamada incorrecta con un parámetro incorrecto
+let cociente = dividir(10, "texto"); // Esto debe ser rechazado
+
+●        Validación de Tipos de Retorno: Asegúrense de que el tipo de valor retornado por un método coincida con el tipo especificado en su declaración. Si un método está definido para retornar un booleano, asegúrense de que no retorne un entero.
+Ejemplo:
+# Ejemplo de método con tipo de retorno correcto
+function esMayorDeEdad(edad) {
+    return edad >= 18; // Retorna un valor booleano
+}
+ 
+// Verificación del valor retornado
+let resultado = esMayorDeEdad(20);
+console.log(resultado); // Debería imprimir true
+# Ejemplo de método con tipo de retorno incorrecto
+function obtenerEdad() {
+    return "Veinte"; // Debe retornar un número, no una cadena
+}
+ 
+
+Gestión de Errores
+
+●        Detección de Errores: Implementen mecanismos para detectar errores en la estructura y uso de las estructuras de control y métodos. Verifiquen casos como la falta de llaves en estructuras de control o la llamada a métodos con parámetros incorrectos.
+Ejemplo:
+                # Ejemplo de error por falta de llaves
+if (x > 10)
+    console.log("x es mayor que 10");
+// Falta la llave de cierre
+# Ejemplo de error en llamada a método con número incorrecto de argumentos
+function imprimirMensaje(mensaje) {
+    console.log(mensaje);
+}
+// Llamada incorrecta
+imprimirMensaje("Hola", "Mundo"); // Esto debe ser rechazado
+
+●        Informes de Errores: Generen mensajes de error claros y específicos que indiquen el tipo de error, la ubicación en el código y una descripción útil del problema. Por ejemplo, un mensaje de error podría ser: "Error: Falta de llave de cierre en la estructura if en la línea 12."
+Ejemplo:
+# Mensaje de error por falta de llave
+"Error: Falta de llave de cierre en la estructura `if` en la línea 12."
+# Mensaje de error por llamada incorrecta a método
+"Error: Llamada al método `imprimirMensaje` con 2 argumentos en lugar de 1 en la línea 24."
+
+●        Manejo de Excepciones: En algunos lenguajes, podrían necesitar manejar excepciones que surjan durante la ejecución de métodos o estructuras de control para asegurar una gestión adecuada de errores.
+Ejemplo:
+# Ejemplo de manejo de excepciones
+try {
+    let resultado = dividir(10, 0); // Puede causar una excepción de división por cero
+    console.log(resultado);
+} catch (error) {
+    console.error("Error al realizar la división: " + error.message);
+}
+
+Pruebas y Validaciones
+
+●        Casos de prueba: Creen casos de prueba que cubran una variedad de escenarios, incluyendo el uso correcto e incorrecto de estructuras de control y métodos. Verifiquen que las estructuras de control funcionen según lo esperado y que los métodos sean llamados correctamente.
+Ejemplo:
+# Pruebas para estructuras de control
+let x = 15;
+if (x > 10) {
+    console.log("x es mayor que 10"); // Debe imprimirse este mensaje
+} else {
+    console.log("x no es mayor que 10");
+}
+ 
+# Pruebas para métodos
+function sumar(a, b) {
+    return a + b;
+}
+ 
+let resultado = sumar(5, 7);
+console.log(resultado); // Debe imprimir 12
+
+●        Validación de resultados: Comparen los resultados obtenidos con los resultados esperados para asegurar que las estructuras de control y métodos funcionen correctamente. Asegúrense de que las estructuras de control conduzcan al flujo de ejecución esperado y que los métodos realicen las tareas adecuadas.
+Ejemplo:
+# Validación del resultado
+function esPar(numero) {
+    return numero % 2 === 0;
+}
+ 
+let resultado = esPar(4);
+console.log(resultado); // Debe imprimir true
+
+●        Cobertura de pruebas: Asegúrense de que las pruebas cubran todos los aspectos relevantes de las estructuras de control y métodos, incluyendo casos límite y escenarios complejos.
+Ejemplo:
+# Prueba de estructura de control anidada
+let x = 20;
+if (x > 10) {
+    if (x > 15) {
+        console.log("x es mayor que 15"); // Debe imprimirse este mensaje
+    }
+}
+:
+# Prueba de método con diferentes tipos de datos
+function concatenar(cadena1, cadena2) {
+    return cadena1 + cadena2;
+}
+ 
+let resultado = concatenar("Hola", " Mundo");
+console.log(resultado); // Debe imprimir "Hola Mundo” 
