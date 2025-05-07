@@ -1,4 +1,12 @@
 import streamlit as st
+
+# Set page configuration - DEBE ser el primer comando de Streamlit
+st.set_page_config(
+    page_title="Compilador de C",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
 import pandas as pd
 import networkx as nx
 import matplotlib.pyplot as plt
@@ -17,23 +25,95 @@ from code_generator import CodeGenerator
 from execution import Executor
 from utils import visualize_graph, highlight_error_in_code
 
-# Set page configuration
-st.set_page_config(
-    page_title="Compilador de C",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
+# Define custom CSS for better UI
+custom_css = """
+<style>
+    .stApp {
+        font-family: 'Open Sans', sans-serif;
+    }
+    .main-header {
+        font-size: 2.5rem;
+        color: #3366ff;
+        text-align: center;
+        margin-bottom: 1rem;
+        text-shadow: 1px 1px 2px rgba(0,0,0,0.1);
+    }
+    .sub-header {
+        font-size: 1.8rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-top: 2rem;
+        border-bottom: 2px solid #3366ff;
+        padding-bottom: 0.5rem;
+    }
+    .tab-header {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #3366ff;
+        margin: 1rem 0;
+    }
+    .instruction-text {
+        color: #555;
+        font-style: italic;
+        margin-bottom: 1rem;
+    }
+    .success-msg {
+        padding: 1rem;
+        background-color: #d4edda;
+        color: #155724;
+        border-radius: 0.5rem;
+        margin: 1rem 0;
+        font-weight: 600;
+    }
+    .error-msg {
+        padding: 1rem;
+        background-color: #f8d7da;
+        color: #721c24;
+        border-radius: 0.5rem;
+        margin: 1rem 0;
+        font-weight: 600;
+    }
+    .code-box {
+        border: 1px solid #ddd;
+        border-radius: 0.5rem;
+        padding: 0.5rem;
+        background-color: #f8f9fa;
+    }
+    .sidebar-header {
+        font-size: 1.5rem;
+        font-weight: 600;
+        color: #3366ff;
+        text-align: center;
+        margin-bottom: 1rem;
+    }
+    .sidebar-subheader {
+        font-size: 1.2rem;
+        font-weight: 500;
+        color: #2c3e50;
+        margin-top: 1.5rem;
+        margin-bottom: 0.5rem;
+    }
+    .phase-description {
+        background-color: #e0e5f0;
+        padding: 1rem;
+        border-radius: 0.5rem;
+        margin-bottom: 1rem;
+        font-size: 0.9rem;
+    }
+</style>
+"""
+st.markdown(custom_css, unsafe_allow_html=True)
 
 # Add a header
-st.title("Compilador de C basado en Python")
-st.write("Ingresa código en C y analiza cada fase de compilación")
+st.markdown('<div class="main-header">Compilador de C basado en Python</div>', unsafe_allow_html=True)
+st.markdown('<p class="instruction-text">Ingresa código en C y analiza cada fase de compilación con esta herramienta interactiva.</p>', unsafe_allow_html=True)
 
 # Add the stock images in the sidebar
-st.sidebar.header("Acerca de")
+st.sidebar.markdown('<div class="sidebar-header">Acerca del Compilador</div>', unsafe_allow_html=True)
 st.sidebar.image("https://images.unsplash.com/photo-1488590528505-98d2b5aba04b", 
-                 caption="Editor de Código", use_column_width=True)
+                 caption="Editor de Código", use_container_width=True)
 st.sidebar.image("https://images.unsplash.com/photo-1578674351410-8b28ab3c66b6", 
-                caption="Diagrama del Compilador", use_column_width=True)
+                caption="Diagrama del Compilador", use_container_width=True)
 
 # Create session state variables if they don't exist
 if 'c_code' not in st.session_state:
@@ -76,8 +156,10 @@ if 'errors' not in st.session_state:
     st.session_state.errors = {}
 
 # Code editor
-st.subheader("Editor de Código C")
-c_code = st.text_area("", st.session_state.c_code, height=300)
+st.markdown('<div class="sub-header">Editor de Código C</div>', unsafe_allow_html=True)
+st.markdown('<div class="code-box">', unsafe_allow_html=True)
+c_code = st.text_area("Código C", st.session_state.c_code, height=300, label_visibility="collapsed")
+st.markdown('</div>', unsafe_allow_html=True)
 
 if c_code != st.session_state.c_code:
     st.session_state.c_code = c_code
@@ -107,7 +189,8 @@ tabs = st.tabs(tab_titles)
 
 # Lexical Analysis Tab
 with tabs[0]:
-    st.header("Análisis Léxico")
+    st.markdown('<div class="tab-header">Análisis Léxico</div>', unsafe_allow_html=True)
+    st.markdown('<div class="phase-description">El análisis léxico es la primera fase del proceso de compilación que identifica y clasifica los elementos básicos del código fuente (tokens) como palabras clave, identificadores, operadores, etc.</div>', unsafe_allow_html=True)
     
     if st.button("Ejecutar Análisis Léxico"):
         lexer = Lexer(st.session_state.c_code)
@@ -144,7 +227,8 @@ with tabs[0]:
 
 # Syntax Analysis Tab
 with tabs[1]:
-    st.header("Análisis Sintáctico")
+    st.markdown('<div class="tab-header">Análisis Sintáctico</div>', unsafe_allow_html=True)
+    st.markdown('<div class="phase-description">El análisis sintáctico construye la estructura del programa a partir de los tokens identificados en la fase léxica, verificando que las sentencias estén formadas correctamente según las reglas gramaticales del lenguaje.</div>', unsafe_allow_html=True)
     
     syntax_option = st.selectbox(
         "Seleccione tipo de análisis sintáctico",
@@ -204,7 +288,8 @@ with tabs[1]:
 
 # Semantic Analysis Tab
 with tabs[2]:
-    st.header("Análisis Semántico")
+    st.markdown('<div class="tab-header">Análisis Semántico</div>', unsafe_allow_html=True)
+    st.markdown('<div class="phase-description">El análisis semántico verifica que las declaraciones y sentencias del programa sean coherentes en cuanto a tipos, ámbitos y uso de variables, detectando errores que no pueden ser capturados por el análisis sintáctico.</div>', unsafe_allow_html=True)
     
     semantic_option = st.selectbox(
         "Seleccione tipo de análisis semántico",
@@ -261,7 +346,8 @@ with tabs[2]:
 
 # Intermediate Code Tab
 with tabs[3]:
-    st.header("Generación de Código Intermedio")
+    st.markdown('<div class="tab-header">Generación de Código Intermedio</div>', unsafe_allow_html=True)
+    st.markdown('<div class="phase-description">El código intermedio es una representación del programa que es independiente de la máquina objetivo y facilita la optimización. Transforma las estructuras del programa en instrucciones más simples, paso previo a la generación del código final.</div>', unsafe_allow_html=True)
     
     # Mostrar ejemplos de código intermedio
     with st.expander("Ver Ejemplos de Generación de Código Intermedio"):
@@ -380,7 +466,8 @@ with tabs[3]:
 
 # Code Optimization Tab
 with tabs[4]:
-    st.header("Optimización de Código")
+    st.markdown('<div class="tab-header">Optimización de Código</div>', unsafe_allow_html=True)
+    st.markdown('<div class="phase-description">La optimización de código aplica diversas técnicas para mejorar el rendimiento del programa generado, reduciendo su tamaño, aumentando su velocidad de ejecución o ambos, sin cambiar su comportamiento.</div>', unsafe_allow_html=True)
     
     optimization_level = st.slider("Nivel de Optimización", 0, 3, 1)
     
@@ -408,7 +495,8 @@ with tabs[4]:
 
 # Code Generation Tab
 with tabs[5]:
-    st.header("Generación de Código")
+    st.markdown('<div class="tab-header">Generación de Código</div>', unsafe_allow_html=True)
+    st.markdown('<div class="phase-description">La fase de generación de código convierte el código intermedio (optimizado) en el lenguaje de máquina o código ensamblador específico para la arquitectura objetivo seleccionada, haciendo uso de los registros y recursos disponibles.</div>', unsafe_allow_html=True)
     
     target_architecture = st.selectbox(
         "Seleccione Arquitectura Objetivo",
@@ -437,8 +525,6 @@ with tabs[5]:
             
             st.session_state.generated_code = target_code
             
-
-            
             if errors:
                 st.session_state.errors['code_gen'] = errors
             else:
@@ -458,7 +544,8 @@ with tabs[5]:
 
 # Execution Tab
 with tabs[6]:
-    st.header("Ejecución de Código")
+    st.markdown('<div class="tab-header">Ejecución de Código</div>', unsafe_allow_html=True)
+    st.markdown('<div class="phase-description">Esta fase ejecuta el código fuente compilado y muestra los resultados de la ejecución. Utiliza un compilador C estándar para generar y ejecutar el programa, mostrando la salida o los errores.</div>', unsafe_allow_html=True)
     
     if st.button("Ejecutar Código"):
         if st.session_state.c_code:

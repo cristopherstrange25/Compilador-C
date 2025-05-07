@@ -210,8 +210,106 @@ class Lexer:
     
     def t_ID(self, t):
         r'[a-zA-Z_][a-zA-Z0-9_]*'
+        # Verificar si es una palabra reservada
         t.type = self.reserved.get(t.value, 'ID')
+        
+        # Si no es una palabra reservada, verificar si es similar a alguna palabra reservada
+        if t.type == 'ID':
+            # Comprobación para detectar palabras clave mal escritas (como "el" en lugar de "else")
+            similar_keywords = self._check_similar_keywords(t.value)
+            if similar_keywords:
+                line_number = t.lineno
+                position_in_line = t.lexpos - sum(len(l) + 1 for l in self.code.split('\n')[:line_number - 1])
+                line_content = self.code.split('\n')[line_number - 1] if line_number <= len(self.code.split('\n')) else ""
+                
+                error_message = f"Advertencia léxica: '{t.value}' podría ser una palabra clave mal escrita en línea {line_number}, posición {position_in_line}\n"
+                error_message += f"Contexto: {line_content}\n"
+                error_message += ' ' * position_in_line + '^' * len(t.value)
+                error_message += f"\nSugerencia: ¿Quizás quiso decir {similar_keywords}?"
+                
+                self.errors.append(error_message)
+        
         return t
+        
+    def _check_similar_keywords(self, word):
+        """Verificar si una palabra es similar a alguna palabra clave de C."""
+        # Lista de palabras clave comunes que podrían ser mal escritas
+        common_keywords = {
+            'el': 'else',
+            'Els': 'else',
+            'elese': 'else',
+            'esle': 'else',
+            'fi': 'if',
+            'fro': 'for',
+            'fore': 'for',
+            'whiel': 'while',
+            'wile': 'while',
+            'whyle': 'while',
+            'witch': 'switch',
+            'swtich': 'switch',
+            'swicth': 'switch',
+            'casse': 'case',
+            'brake': 'break',
+            'brk': 'break',
+            'retrn': 'return',
+            'reutrn': 'return',
+            'retur': 'return',
+            'defualt': 'default',
+            'defalt': 'default',
+            'printF': 'printf',
+            'pintf': 'printf',
+            'scan': 'scanf',
+            'scanF': 'scanf',
+            'scnaf': 'scanf',
+            'pnt': 'print',
+            'prnit': 'print',
+            'pinrt': 'print'
+        }
+        
+        # Revisar si la palabra está en el diccionario de errores comunes
+        if word in common_keywords:
+            return f"'{common_keywords[word]}'"
+        
+        # Si no se encuentra en errores comunes, buscar similitud con otras palabras clave
+        # Solo para palabras cortas (menos de 8 caracteres) para evitar falsos positivos
+        if len(word) < 8:
+            close_matches = []
+            for keyword in self.reserved.keys():
+                # Detectar palabras que difieren en máximo 2 caracteres
+                if len(keyword) > 2 and abs(len(keyword) - len(word)) <= 2:
+                    # Algoritmo simple de distancia de edición
+                    similar = self._is_similar(word, keyword)
+                    if similar:
+                        close_matches.append(f"'{keyword}'")
+            
+            if close_matches:
+                return " o ".join(close_matches[:2])  # Mostrar hasta 2 sugerencias
+        
+        return None
+    
+    def _is_similar(self, word1, word2):
+        """
+        Verificar si dos palabras son similares basándose en la distancia de Levenshtein.
+        Retorna True si las palabras difieren en máximo 2 caracteres.
+        """
+        # Para palabras muy cortas, ser más estricto
+        if len(word1) <= 3 or len(word2) <= 3:
+            return word1 == word2
+            
+        if abs(len(word1) - len(word2)) > 2:
+            return False
+            
+        # Implementación simple de distancia de edición
+        distance = 0
+        for i in range(min(len(word1), len(word2))):
+            if word1[i] != word2[i]:
+                distance += 1
+                if distance > 2:  # Más de 2 diferencias
+                    return False
+        
+        # Agregar diferencia de longitud
+        distance += abs(len(word1) - len(word2))
+        return distance <= 2
     
     # Regla para identificar literales numéricos incompletos (hexadecimales malformados)
     def t_INVALID_HEX(self, t):

@@ -21,8 +21,42 @@ class Parser:
             ['return', '=', '+=', '-=', '*=', '/=', 'break', 'continue'],
             "Falta punto y coma (;) después de '{keyword}'"
         ),
-        'unmatched_parentheses': ("()", "Los paréntesis no están balanceados correctamente")
+        'unmatched_parentheses': ("()", "Los paréntesis no están balanceados correctamente"),
+        'unknown_keyword': ("", "'{keyword}' no es una palabra clave reconocida del lenguaje C")
     }
+    
+    # Lista de funciones estándar de C y algunas comunes de extensiones
+    KNOWN_FUNCTIONS = [
+        # Funciones estándar de E/S
+        'printf', 'scanf', 'getchar', 'putchar', 'puts', 'gets',
+        'fprintf', 'fscanf', 'sprintf', 'sscanf', 'fgets', 'fputs',
+        'fopen', 'fclose', 'fread', 'fwrite', 'fseek', 'ftell', 'rewind',
+        'feof', 'ferror', 'clearerr', 'remove', 'rename',
+        
+        # Funciones de manejo de memoria
+        'malloc', 'free', 'calloc', 'realloc',
+        
+        # Funciones de cadenas
+        'strlen', 'strcpy', 'strncpy', 'strcat', 'strncat', 'strcmp', 'strncmp',
+        'strchr', 'strrchr', 'strstr', 'strtok', 'memcpy', 'memmove', 'memcmp',
+        'memchr', 'memset',
+        
+        # Funciones matemáticas
+        'sin', 'cos', 'tan', 'asin', 'acos', 'atan', 'atan2', 'sinh', 'cosh', 'tanh',
+        'exp', 'log', 'log10', 'pow', 'sqrt', 'ceil', 'floor', 'fabs', 'ldexp',
+        'frexp', 'modf', 'fmod',
+        
+        # Funciones de utilidad
+        'rand', 'srand', 'time', 'clock', 'exit', 'abort', 'system',
+        'getenv', 'bsearch', 'qsort', 'abs', 'labs', 'div', 'ldiv',
+        
+        # Otras funciones comunes
+        'isalpha', 'isdigit', 'isalnum', 'isspace', 'islower', 'isupper',
+        'tolower', 'toupper', 'atoi', 'atof', 'atol',
+        
+        # Funciones simplificadas para el entorno educativo
+        'print', 'main'
+    ]
     
     def __init__(self, tokens):
         self.tokens = tokens
@@ -54,6 +88,30 @@ class Parser:
         if not self.tokens:
             self.errors.append("Error sintáctico: No hay tokens para analizar")
             return self.ast, self.errors
+            
+        # Verificar paréntesis y llaves balanceados primero
+        brace_errors = self._check_balanced_braces(self.tokens)
+        if brace_errors:
+            self.errors.extend(brace_errors)
+        
+        paren_errors = self._check_balanced_parentheses(self.tokens)
+        if paren_errors:
+            self.errors.extend(paren_errors)
+        
+        # Verificar operadores y operandos
+        operator_errors = self._check_operators_and_operands(self.tokens)
+        if operator_errors:
+            self.errors.extend(operator_errors)
+        
+        # Verificar puntos y coma faltantes
+        semicolon_errors = self._check_missing_semicolons(self.tokens)
+        if semicolon_errors:
+            self.errors.extend(semicolon_errors)
+            
+        # Verificar funciones desconocidas
+        unknown_function_errors = self._check_unknown_functions(self.tokens)
+        if unknown_function_errors:
+            self.errors.extend(unknown_function_errors)
         
         # Track current type and variables being declared
         current_type = None
@@ -152,6 +210,30 @@ class Parser:
             self.errors.append("Error sintáctico: No hay tokens para analizar expresiones")
             return self.ast, self.errors
         
+        # Verificar paréntesis y llaves balanceados primero
+        brace_errors = self._check_balanced_braces(self.tokens)
+        if brace_errors:
+            self.errors.extend(brace_errors)
+        
+        paren_errors = self._check_balanced_parentheses(self.tokens)
+        if paren_errors:
+            self.errors.extend(paren_errors)
+        
+        # Verificar expresiones incompletas y operadores sin operandos
+        operator_errors = self._check_operators_and_operands(self.tokens)
+        if operator_errors:
+            self.errors.extend(operator_errors)
+            
+        # Verificar puntos y coma faltantes
+        semicolon_errors = self._check_missing_semicolons(self.tokens)
+        if semicolon_errors:
+            self.errors.extend(semicolon_errors)
+            
+        # Verificar funciones desconocidas
+        unknown_function_errors = self._check_unknown_functions(self.tokens)
+        if unknown_function_errors:
+            self.errors.extend(unknown_function_errors)
+        
         # Process expressions
         i = 0
         while i < len(self.tokens):
@@ -174,6 +256,13 @@ class Parser:
                 # Verificar si se encontró el punto y coma
                 if j < len(self.tokens) and self.tokens[j]['type'] == 'SEMI':
                     semicolon_found = True
+                else:
+                    line_num = self.tokens[i]['line']
+                    line_content = self._get_line_content(line_num)
+                    error_msg = f"Error sintáctico: Falta punto y coma (;) al final de la expresión en línea {line_num}\n"
+                    error_msg += f"Contexto: {line_content}\n"
+                    error_msg += f"Sugerencia: Agregue un punto y coma al final de la expresión"
+                    self.errors.append(error_msg)
                 
                 # Add to AST elements
                 expr_text = ' '.join([t['value'] for t in expr_tokens])
@@ -272,6 +361,20 @@ class Parser:
         
         paren_errors = self._check_balanced_parentheses(self.tokens)
         self.errors.extend(paren_errors)
+        
+        # Verificar operadores y operandos
+        operator_errors = self._check_operators_and_operands(self.tokens)
+        self.errors.extend(operator_errors)
+        
+        # Verificar puntos y coma faltantes
+        semicolon_errors = self._check_missing_semicolons(self.tokens)
+        if semicolon_errors:
+            self.errors.extend(semicolon_errors)
+            
+        # Verificar funciones desconocidas
+        unknown_function_errors = self._check_unknown_functions(self.tokens)
+        if unknown_function_errors:
+            self.errors.extend(unknown_function_errors)
         
         # Definir la gramática para las estructuras de control
         # según el formato en los requisitos
@@ -874,6 +977,225 @@ class Parser:
         
         return errors
     
+    def _check_missing_semicolons(self, tokens):
+        """Verifica que todas las sentencias terminen con punto y coma."""
+        errors = []
+        
+        # Lista de tokens que requieren punto y coma cuando aparecen en una sentencia
+        requires_semicolon_tokens = [
+            'EQUALS', 'PLUSEQUAL', 'MINUSEQUAL', 'TIMESEQUAL', 'DIVEQUAL', 'MODEQUAL',  # Asignaciones
+            'PRINTF', 'SCANF', 'PRINT', 'SCAN',  # Funciones de I/O
+            'PLUSPLUS', 'MINUSMINUS',  # Incremento/decremento
+            'RETURN',  # Sentencia return
+        ]
+        
+        # Tokens que marcan inicio de estructuras que no necesitan punto y coma
+        control_structure_tokens = [
+            'IF', 'ELSE', 'FOR', 'WHILE', 'DO', 'SWITCH', 'CASE'
+        ]
+        
+        # Tokens que indican tipos o modificadores
+        type_tokens = [
+            'INT', 'FLOAT', 'CHAR', 'DOUBLE', 'VOID', 'LONG', 'SHORT',
+            'UNSIGNED', 'SIGNED', 'STATIC', 'CONST', 'EXTERN'
+        ]
+        
+        # Primero, identifiquemos los tokens que encontramos en cada línea
+        lines_tokens = {}
+        
+        for token in tokens:
+            line = token['line']
+            if line not in lines_tokens:
+                lines_tokens[line] = []
+            
+            lines_tokens[line].append(token)
+        
+        # Ahora analizamos cada línea por separado
+        for line_num, line_tokens in lines_tokens.items():
+            # No verificamos líneas vacías o con un solo token
+            if len(line_tokens) <= 1:
+                continue
+                
+            # Verificar el último token de la línea
+            last_token = line_tokens[-1]
+            
+            # Variables para determinar el tipo de línea
+            has_function_call = False
+            has_variable_decl = False
+            has_assignment = False
+            has_control_structure = False
+            is_function_definition = False
+            
+            # Primero, detectar si parece ser una definición de función
+            has_type_token = False
+            has_id_paren = False
+            idx_type = -1
+            
+            for i, token in enumerate(line_tokens):
+                # Verificar si hay un tipo de dato (int, float, etc.)
+                if token['type'] in type_tokens:
+                    has_type_token = True
+                    idx_type = i
+                
+                # Verificar si hay un ID seguido de paréntesis (función)
+                if token['type'] == 'ID' and i < len(line_tokens) - 1 and line_tokens[i+1]['type'] == 'LPAREN':
+                    has_id_paren = True
+                    
+                    # Si hay un tipo antes del ID y paréntesis, podría ser definición de función
+                    if has_type_token and i > idx_type:
+                        # Buscar una llave de apertura en las siguientes líneas
+                        for next_line in range(line_num + 1, line_num + 4):  # Buscar hasta 3 líneas adelante
+                            if next_line in lines_tokens:
+                                for next_token in lines_tokens[next_line]:
+                                    if next_token['type'] == 'LBRACE':
+                                        is_function_definition = True
+                                        break
+                                        
+                                if is_function_definition:
+                                    break
+            
+            # Si es una definición de función, no necesita punto y coma
+            if is_function_definition:
+                continue
+            
+            # Verificar tokens específicos que indican necesidad de punto y coma
+            for i, token in enumerate(line_tokens):
+                # Estructura de control (no necesita punto y coma)
+                if token['type'] in control_structure_tokens:
+                    has_control_structure = True
+                    break
+                
+                # Llamada a función como printf, scanf, etc.
+                if token['type'] in ['PRINTF', 'SCANF', 'PRINT', 'SCAN', 'FPRINTF', 'FSCANF', 'PUTS', 'GETS']:
+                    has_function_call = True
+                
+                # Cualquier identificador seguido de paréntesis puede ser una llamada a función
+                if token['type'] == 'ID' and i < len(line_tokens) - 1 and line_tokens[i+1]['type'] == 'LPAREN':
+                    # Distinguir entre declaración de función y llamada a función
+                    # Si no hay tipo antes del ID, es una llamada a función
+                    if not any(lt['type'] in type_tokens for lt in line_tokens[:i]):
+                        has_function_call = True
+                
+                # Asignaciones
+                if token['type'] in ['EQUALS', 'PLUSEQUAL', 'MINUSEQUAL', 'TIMESEQUAL', 'DIVEQUAL', 'MODEQUAL']:
+                    has_assignment = True
+                
+                # Declaración de variable (tiene tipo pero no es función)
+                if token['type'] in type_tokens:
+                    # Verificar si la declaración NO es de función
+                    is_variable_decl = True
+                    
+                    # Buscar paréntesis que indicarían que es una función
+                    for j in range(i+1, len(line_tokens)):
+                        if line_tokens[j]['type'] == 'LPAREN':
+                            is_variable_decl = False
+                            break
+                    
+                    if is_variable_decl:
+                        has_variable_decl = True
+            
+            # Verificar si necesita punto y coma pero no lo tiene
+            needs_semicolon = (has_function_call or has_assignment or has_variable_decl or 
+                              (last_token['type'] == 'RETURN'))
+            
+            if needs_semicolon and not has_control_structure and last_token['type'] != 'SEMI':
+                # Y no hay continuación de expresión en la línea siguiente
+                next_line_continues = False
+                if line_num + 1 in lines_tokens:
+                    next_tokens = lines_tokens[line_num + 1]
+                    if next_tokens and next_tokens[0]['type'] in ['PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MODULO']:
+                        next_line_continues = True
+                
+                if not next_line_continues:
+                    position = self._get_token_position_in_line(last_token) + len(last_token['value'])
+                    line_content = self._get_line_content(line_num)
+                    position_marker = ' ' * position + '^'
+                    
+                    error_msg = f"Error sintáctico: Falta punto y coma (;) al final de la línea {line_num}\n"
+                    error_msg += f"Contexto: {line_content}\n{position_marker}\n"
+                    error_msg += f"Sugerencia: Agregue un punto y coma al final de la sentencia"
+                    
+                    errors.append(error_msg)
+        
+        return errors
+    
+    def _check_operators_and_operands(self, tokens):
+        """Verifica que los operadores tengan sus operandos correspondientes."""
+        errors = []
+        
+        # Listas de tipos de token para clasificación
+        arithmetic_operators = ['PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MODULO']
+        comparison_operators = ['LT', 'LE', 'GT', 'GE', 'EQ', 'NE']
+        logical_operators = ['LAND', 'LOR', 'AND', 'OR', 'XOR']
+        assignment_operators = ['EQUALS', 'PLUSEQUAL', 'MINUSEQUAL', 'TIMESEQUAL', 'DIVEQUAL', 'MODEQUAL']
+        all_operators = arithmetic_operators + comparison_operators + logical_operators + assignment_operators
+        
+        # Tipos de token que pueden ser operandos válidos
+        valid_operands = ['ID', 'INTEGER', 'FLOAT_NUM', 'CHAR_CONST', 'STRING_LITERAL']
+        
+        for i, token in enumerate(tokens):
+            # Verificar operadores
+            if token['type'] in all_operators:
+                # Verificar que hay un operando a la izquierda
+                has_left_operand = False
+                if i > 0 and (tokens[i-1]['type'] in valid_operands or tokens[i-1]['type'] == 'RPAREN'):
+                    has_left_operand = True
+                
+                # Verificar que hay un operando a la derecha
+                has_right_operand = False
+                if i < len(tokens) - 1 and (tokens[i+1]['type'] in valid_operands or tokens[i+1]['type'] == 'LPAREN'):
+                    has_right_operand = True
+                
+                # Reportar error si falta un operando
+                if not has_left_operand or not has_right_operand:
+                    line_num = token['line']
+                    line_content = self._get_line_content(line_num)
+                    position = self._get_token_position_in_line(token)
+                    position_marker = ' ' * position + '^'
+                    
+                    error_type = ""
+                    if token['type'] in arithmetic_operators:
+                        error_type = "aritmético"
+                    elif token['type'] in comparison_operators:
+                        error_type = "de comparación"
+                    elif token['type'] in logical_operators:
+                        error_type = "lógico"
+                    else:
+                        error_type = "de asignación"
+                    
+                    error_msg = f"Error sintáctico: Operador {error_type} '{token['value']}' "
+                    
+                    if not has_left_operand and not has_right_operand:
+                        error_msg += f"sin operandos en línea {line_num}\n"
+                        error_msg += f"Contexto: {line_content}\n{position_marker}\n"
+                        error_msg += f"Sugerencia: El operador '{token['value']}' requiere operandos a la izquierda y derecha"
+                    elif not has_left_operand:
+                        error_msg += f"sin operando izquierdo en línea {line_num}\n"
+                        error_msg += f"Contexto: {line_content}\n{position_marker}\n"
+                        error_msg += f"Sugerencia: El operador '{token['value']}' requiere un operando a la izquierda"
+                    else:  # not has_right_operand
+                        error_msg += f"sin operando derecho en línea {line_num}\n"
+                        error_msg += f"Contexto: {line_content}\n{position_marker}\n"
+                        error_msg += f"Sugerencia: El operador '{token['value']}' requiere un operando a la derecha"
+                    
+                    errors.append(error_msg)
+                
+                # Verificar operadores secuenciales (como x + * y)
+                if i > 0 and i < len(tokens) - 1:
+                    if tokens[i-1]['type'] in all_operators or tokens[i+1]['type'] in all_operators:
+                        line_num = token['line']
+                        line_content = self._get_line_content(line_num)
+                        position = self._get_token_position_in_line(token)
+                        position_marker = ' ' * position + '^'
+                        
+                        error_msg = f"Error sintáctico: Operadores secuenciales sin operandos intermedios en línea {line_num}\n"
+                        error_msg += f"Contexto: {line_content}\n{position_marker}\n"
+                        error_msg += f"Sugerencia: No se pueden usar operadores secuencialmente sin operandos intermedios"
+                        
+                        errors.append(error_msg)
+        
+        return errors
+        
     def _check_balanced_parentheses(self, tokens):
         """Verifica que los paréntesis estén balanceados correctamente y proporciona mensajes detallados."""
         stack = []
@@ -918,6 +1240,26 @@ class Parser:
                             error_msg += f"Sugerencia: Esta estructura de control tiene una condición vacía, lo que podría ser un error"
                             
                             errors.append(error_msg)
+                    else:
+                        # Verificar contenido desbalanceado dentro de paréntesis
+                        # (5 + )
+                        opening_idx = tokens.index(opening_token)
+                        closing_idx = tokens.index(token)
+                        content_tokens = tokens[opening_idx+1:closing_idx]
+                        
+                        if content_tokens:
+                            last_token = content_tokens[-1]
+                            if last_token['type'] in ['PLUS', 'MINUS', 'TIMES', 'DIVIDE', 'MODULO', 'LT', 'LE', 'GT', 'GE', 'EQ', 'NE']:
+                                line_num = last_token['line']
+                                line_content = self._get_line_content(line_num)
+                                position = self._get_token_position_in_line(last_token)
+                                position_marker = ' ' * position + '^'
+                                
+                                error_msg = f"Error sintáctico: Operador '{last_token['value']}' sin operando derecho dentro de paréntesis en línea {line_num}\n"
+                                error_msg += f"Contexto: {line_content}\n{position_marker}\n"
+                                error_msg += f"Sugerencia: El operador '{last_token['value']}' requiere un operando a la derecha"
+                                
+                                errors.append(error_msg)
         
         # Comprueba si quedan paréntesis sin cerrar
         for token, parenthesis, context in stack:
@@ -931,6 +1273,50 @@ class Parser:
             error_msg += f"Sugerencia: Los paréntesis están desbalanceados. Agregue un paréntesis de cierre ')'"
             
             errors.append(error_msg)
+        
+        return errors
+        
+    def _check_unknown_functions(self, tokens):
+        """Verifica si se están usando funciones que no están definidas en C."""
+        errors = []
+        
+        # Buscar patrones de llamada a función: ID seguido de paréntesis
+        for i, token in enumerate(tokens):
+            if token['type'] == 'ID' and i + 1 < len(tokens) and tokens[i+1]['type'] == 'LPAREN':
+                function_name = token['value']
+                
+                # Verificar si la función es conocida
+                if function_name.lower() not in [f.lower() for f in self.KNOWN_FUNCTIONS]:
+                    # No está en la lista de funciones estándar
+                    line_num = token['line']
+                    line_content = self._get_line_content(line_num)
+                    position = self._get_token_position_in_line(token)
+                    position_marker = ' ' * position + '^' * len(function_name)
+                    
+                    # Buscar funciones similares para sugerir
+                    suggestions = []
+                    for known_func in self.KNOWN_FUNCTIONS:
+                        # Funciones similares (considerando diferencia de máximo 2 caracteres)
+                        if abs(len(known_func) - len(function_name)) <= 2:
+                            # Algoritmo simple de distancia de edición
+                            distance = 0
+                            for j in range(min(len(known_func), len(function_name))):
+                                if j < len(known_func) and j < len(function_name) and known_func[j].lower() != function_name[j].lower():
+                                    distance += 1
+                            
+                            distance += abs(len(known_func) - len(function_name))
+                            if distance <= 2:
+                                suggestions.append(known_func)
+                    
+                    error_msg = f"Error semántico: La función '{function_name}' no está definida en C estándar en línea {line_num}\n"
+                    error_msg += f"Contexto: {line_content}\n{position_marker}\n"
+                    
+                    if suggestions:
+                        error_msg += f"Sugerencia: ¿Quizás quiso decir {', '.join(suggestions[:2])}?"
+                    else:
+                        error_msg += "Sugerencia: Verifique que la función esté declarada o incluya la biblioteca correspondiente"
+                    
+                    errors.append(error_msg)
         
         return errors
         

@@ -192,11 +192,18 @@ class SemanticAnalyzer:
             self.errors.append("No AST graph available for type checking")
             return {}, self.errors
         
+        # Construir tabla de símbolos si no existe
+        if not self.symbol_table:
+            _, self.symbol_table, symbol_errors = self.analyze_symbols()
+            if symbol_errors:
+                self.errors.extend(symbol_errors)
+        
         # Results to store type checking information
         type_results = {
             'type_mismatches': [],
             'incompatible_assignments': [],
-            'undefined_variables': []
+            'undefined_variables': [],
+            'string_numeric_mismatch': []
         }
         
         # Check variable assignments and expressions
@@ -219,14 +226,41 @@ class SemanticAnalyzer:
                     right_type = self._get_type(right_operand)
                     
                     if left_type and right_type:
-                        compatible = self._are_types_compatible(left_type, right_type, operator)
+                        compatible, error_details = self._are_types_compatible_with_details(left_type, right_type, operator)
                         if not compatible:
-                            self.errors.append(f"Incompatible types in binary expression: {left_type} {operator} {right_type}")
+                            line_num = self._get_line_for_node(node)
+                            context = self._get_context_for_node(node)
+                            
+                            error_msg = f"Error semántico: Incompatibilidad de tipos en operación '{operator}' en línea {line_num}\n"
+                            if context:
+                                error_msg += f"Contexto: {context}\n"
+                            error_msg += f"Detalles: {error_details}\n"
+                            error_msg += f"Sugerencia: Asegúrese de que los operandos sean del mismo tipo o que sean compatibles para esta operación"
+                            
+                            self.errors.append(error_msg)
                             type_results['type_mismatches'].append({
                                 'expression': f"{left_operand} {operator} {right_operand}",
                                 'left_type': left_type,
-                                'right_type': right_type
+                                'right_type': right_type,
+                                'line': line_num,
+                                'context': context
                             })
+                            
+                            # Detectar específicamente mezcla de string con numérico
+                            if (left_type == 'string' and right_type in ['int', 'float', 'double']) or \
+                               (right_type == 'string' and left_type in ['int', 'float', 'double']):
+                                error_msg = f"Error semántico: No se puede usar un tipo string con un tipo numérico en operación '{operator}' en línea {line_num}\n"
+                                if context:
+                                    error_msg += f"Contexto: {context}\n"
+                                error_msg += f"Sugerencia: Las cadenas no se pueden operar directamente con números. Considere convertir el tipo o usar una operación diferente."
+                                
+                                self.errors.append(error_msg)
+                                type_results['string_numeric_mismatch'].append({
+                                    'expression': f"{left_operand} {operator} {right_operand}",
+                                    'string_operand': left_operand if left_type == 'string' else right_operand,
+                                    'numeric_operand': right_operand if left_type == 'string' else left_operand,
+                                    'line': line_num
+                                })
             
             # Check assignments
             elif data.get('type') == 'variable':
@@ -373,51 +407,118 @@ class SemanticAnalyzer:
             self.errors.append(f"Error al determinar el tipo de expresión: {str(e)}")
             return 'unknown'
     
-    def _are_types_compatible(self, type1, type2, operator):
-        """Check if two types are compatible for the given operator."""
-        # Simplified type compatibility rules
-        numeric_types = ['int', 'float', 'double', 'long', 'short']
+    def _get_line_for_node(self, node):
+        """Intenta obtener el número de línea para un nodo del AST."""
+        # En un AST real, los nodos tendrían información de posición
+        # Aquí simulamos esa información
+        return "desconocida"  # En un compilador real, devolvería el número de línea
+    
+    def _get_context_for_node(self, node):
+        """Obtiene el contexto (código fuente) para un nodo del AST."""
+        # En un AST real, podríamos consultar el código fuente original
+        return None  # En un compilador real, devolvería el fragmento de código
+    
+    def _are_types_compatible_with_details(self, type1, type2, operator):
+        """Verifica si dos tipos son compatibles para el operador dado y proporciona detalles de error."""
+        # Tipos numéricos reconocidos
+        numeric_types = ['int', 'float', 'double', 'long', 'short', 'char']
+        string_types = ['char*', 'string', 'const char*']
         
         # Arithmetic operators
-        if operator in ['+', '-', '*', '/', '%', '+=', '-=', '*=', '/=', '%=']:
+        if operator in ['+', '-', '*', '/', '%']:
             if type1 in numeric_types and type2 in numeric_types:
-                return True
-            if type1 == 'char*' and type2 == 'char*' and operator == '+':
-                # Allow string concatenation
-                return True
-            return False
-        
-        # Comparison operators
-        elif operator in ['<', '>', '<=', '>=', '==', '!=']:
-            if type1 in numeric_types and type2 in numeric_types:
-                return True
-            if type1 == type2:  # Same types can always be compared
-                return True
-            return False
-        
-        # Assignment
-        elif operator == '=':
-            # Allow numeric type conversion with potential loss warning
-            if type1 in numeric_types and type2 in numeric_types:
-                if (type1 == 'int' and type2 in ['float', 'double']) or \
-                   (type1 == 'float' and type2 == 'double'):
-                    self.errors.append(f"Warning: Possible loss of precision in assignment from {type2} to {type1}")
-                return True
+                return True, ""
+            elif type1 in string_types and type2 in string_types and operator == '+':
+                # Solo permitir concatenación de cadenas
+                return True, ""
+            else:
+                error_details = f"Los tipos '{type1}' y '{type2}' no son compatibles para la operación aritmética '{operator}'"
+                if type1 in string_types or type2 in string_types:
+                    if operator != '+':
+                        error_details += f". Las cadenas solo pueden usar el operador '+' para concatenación, no '{operator}'"
+                    else:
+                        error_details += f". Asegúrese de que ambos operandos sean cadenas para concatenación"
+                return False, error_details
+                
+        # Assignment operators (incluye operadores aritméticos combinados)
+        elif operator in ['=', '+=', '-=', '*=', '/=', '%=']:
+            # Reglas específicas para asignación
+            if operator == '=':
+                # Asignación simple - más permisiva
+                if type1 in numeric_types and type2 in numeric_types:
+                    # Advertir sobre posible pérdida de precisión
+                    if (type1 in ['int', 'long', 'short'] and type2 in ['float', 'double']) or \
+                       (type1 == 'int' and type2 in ['long']):
+                        return True, f"Advertencia: Posible pérdida de precisión al asignar {type2} a {type1}"
+                    return True, ""
+                elif type1 in string_types and type2 in string_types:
+                    return True, ""
+                else:
+                    error_details = f"No se puede asignar un valor de tipo '{type2}' a una variable de tipo '{type1}'"
+                    return False, error_details
+            else:
+                # Operadores de asignación combinados (+=, -=, etc.)
+                # Verificar compatibilidad según el operador aritmético/lógico asociado
+                base_op = operator[0]  # Obtener el operador base ('+' para '+=', etc.)
+                compatible, details = self._are_types_compatible_with_details(type1, type2, base_op)
+                if not compatible:
+                    error_details = f"Incompatibilidad de tipos para el operador '{operator}': {details}"
+                    return False, error_details
+                return True, ""
+                
+        # Comparison operators - most types can be compared
+        elif operator in ['==', '!=', '<', '>', '<=', '>=']:
+            # Operadores de igualdad (== y !=)
+            if operator in ['==', '!=']:
+                if type1 == type2:  # Mismos tipos siempre son comparables para igualdad
+                    return True, ""
+                elif type1 in numeric_types and type2 in numeric_types:
+                    return True, ""
+                elif type1 in string_types and type2 in string_types:
+                    return True, ""
+                else:
+                    error_details = f"No se pueden comparar directamente valores de tipos '{type1}' y '{type2}' con el operador '{operator}'"
+                    return False, error_details
             
-            if type1 == type2:  # Same types can always be assigned
-                return True
-            
-            # Pointer assignment compatibility would go here
-            
-            return False
+            # Operadores de orden (<, >, <=, >=)
+            else:
+                if type1 in numeric_types and type2 in numeric_types:
+                    return True, ""
+                elif type1 in string_types and type2 in string_types:
+                    return True, f"Advertencia: La comparación de cadenas con '{operator}' compara los punteros, no el contenido"
+                else:
+                    error_details = f"No se pueden usar operadores de orden '{operator}' con tipos incomparables '{type1}' y '{type2}'"
+                    if type1 in string_types or type2 in string_types:
+                        error_details += ". Para cadenas, considere usar funciones como strcmp()"
+                    return False, error_details
         
         # Logical operators
         elif operator in ['&&', '||', '!']:
-            # Most types can be used in logical expressions
-            return True
+            # Los operadores lógicos requieren valores booleanos o numéricos
+            bool_compatible_types = numeric_types + ['bool']
+            if type1 in bool_compatible_types and type2 in bool_compatible_types:
+                return True, ""
+            else:
+                error_details = f"Los operadores lógicos '{operator}' requieren operandos numéricos o booleanos"
+                return False, error_details
         
-        # Default: assume incompatible
-        return False
+        # Bitwise operators
+        elif operator in ['&', '|', '^', '~', '<<', '>>']:
+            # Los operadores bit a bit solo funcionan con enteros
+            integer_types = ['int', 'long', 'short', 'char', 'unsigned int', 'unsigned long', 'unsigned short', 'unsigned char']
+            if type1 in integer_types and type2 in integer_types:
+                return True, ""
+            else:
+                error_details = f"Los operadores bit a bit '{operator}' solo trabajan con tipos enteros"
+                return False, error_details
+        
+        # Operador desconocido o no soportado
+        return False, f"Operación no soportada entre tipos '{type1}' y '{type2}' con operador '{operator}'"
+    
+    def _are_types_compatible(self, type1, type2, operator):
+        """Check if two types are compatible for the given operator."""
+        compatible, _ = self._are_types_compatible_with_details(type1, type2, operator)
+        return compatible
     
     def verify_expressions(self):
         """
